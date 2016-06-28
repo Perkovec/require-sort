@@ -1,12 +1,28 @@
 {
     "name": "require-sort",
     "displayName": "Require sort",
-    "description": "",
+    "description": "Visual Studio Code plugin for sorting selected JavaScript require() lines by module name.",
     "version": "0.0.1",
     "publisher": "Perkovec",
+    "icon": "icon.png",
     "engines": {
         "vscode": "^1.0.0"
     },
+    "keywords": [
+        "require",
+        "sort",
+        "node",
+        "node.js",
+        "javascript"
+    ],
+    "bugs": {
+        "url": "https://github.com/Perkovec/require-sort/issues"
+    },
+    "repository": {
+		"type": "git",
+		"url": "https://github.com/Perkovec/require-sort.git"
+	},
+    "homepage": "https://github.com/Perkovec/require-sort",
     "categories": [
         "Other"
     ],
