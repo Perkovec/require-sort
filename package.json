@@ -1,0 +1,35 @@
+{
+    "name": "require-sort",
+    "displayName": "Require sort",
+    "description": "",
+    "version": "0.0.1",
+    "publisher": "Perkovec",
+    "engines": {
+        "vscode": "^1.0.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onCommand:require_sort.sort"
+    ],
+    "main": "./extension",
+    "contributes": {
+        "commands": [{
+            "command": "require_sort.sort",
+            "title": "Sort requires"
+        }],
+        "keybindings": [{
+            "command": "require_sort.sort",
+            "key": "shift+ctrl+r",
+            "mac": "shift+cmd+r",
+            "when": "editorTextFocus"
+        }]
+    },
+    "scripts": {
+        "postinstall": "node ./node_modules/vscode/bin/install"
+    },
+    "devDependencies": {
+        "vscode": "^0.11.0"
+    }
+}
