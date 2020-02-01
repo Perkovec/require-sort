@@ -1,5 +1,7 @@
 # Require sort
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/Perkovec/require-sort.svg)](https://greenkeeper.io/)
+
 Visual Studio Code plugin for sorting selected JavaScript require() lines by module name.
 
 ## Installation
