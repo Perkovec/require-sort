@@ -1,54 +1,88 @@
-var vscode = require('vscode');
+const vscode = require('vscode');
 
-var requireRegex = /require\s*\(\s*('|").*('|")\s*\)/g;
-var moduleRegex = /('|").*('|")/g;
+const requireRegex = /require\s*\(\s*('|").*('|")\s*\)/g;
+const moduleRegex = /('|").*('|")/g;
 
-var priority = {
-    "./": 1,
-    "../": 2
+const priority = {
+  './': 1,
+  '../': 2,
 };
 
 function subCount(str, substr) {
-    return (str.split(substr).length - 1)
+  return str.split(substr).length - 1;
+}
+
+function formatRequires(str) {
+  const inputString = str.replace(/\n/g, '');
+  const stringWithConstVar = inputString.replace(/(const |var )/g, '\n$1');
+  const requiresArray = stringWithConstVar.split('\n');
+  return requiresArray.filter((n) => n);
+}
+
+function sortVariables(strArray) {
+  return strArray.map((inputString) => {
+    const variablePattern = /\{([^}]+)\}/;
+    const match = inputString.match(variablePattern);
+
+    if (match) {
+      const variables = match[1].split(',').map((variable) => variable.trim());
+      const sortedVariables = variables
+        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+        .filter((n) => n)
+        .join(', ');
+
+      return inputString.replace(variablePattern, `{ ${sortedVariables} }`);
+    }
+
+    return inputString;
+  });
+}
+
+function sortRequires(strArray) {
+  return strArray.sort(function (a, b) {
+    const aModule = a.match(requireRegex)[0].match(moduleRegex)[0].slice(1, -1);
+    const bModule = b.match(requireRegex)[0].match(moduleRegex)[0].slice(1, -1);
+
+    const aPriority =
+      priority['./'] * subCount(aModule, './') + priority['../'] * subCount(aModule, '../');
+    const bPriority =
+      priority['./'] * subCount(bModule, './') + priority['../'] * subCount(bModule, '../');
+
+    if (aPriority > bPriority) return 1;
+
+    if (bPriority > aPriority) return -1;
+
+    if (aModule > bModule) return 1;
+
+    if (aModule < bModule) return -1;
+
+    return 0;
+  });
 }
 
 function activate(context) {
-    var disposable = vscode.commands.registerCommand('require_sort.sort', function () {
-        var editor = vscode.window.activeTextEditor;
+  const disposable = vscode.commands.registerCommand('require_sort.sort', function () {
+    const editor = vscode.window.activeTextEditor;
 
-        if (editor === undefined) return;
+    if (editor === undefined) return;
 
-        var document = editor.document;
+    const document = editor.document;
 
-        var text = document.getText(editor.selection);
-        var textLines = text.split('\n');
-        textLines.sort(function(a, b) {
-            var aModule = a.match(requireRegex)[0].match(moduleRegex)[0].slice(1, -1);
-            var bModule = b.match(requireRegex)[0].match(moduleRegex)[0].slice(1, -1);
+    const requiresString = document.getText(editor.selection);
+    const requiresLines = formatRequires(requiresString);
 
-            var aPriority = priority['./'] * subCount(aModule, './') + priority['../'] * subCount(aModule, '../');
-            var bPriority = priority['./'] * subCount(bModule, './') + priority['../'] * subCount(bModule, '../');
+    const textLinesSorted = sortRequires(requiresLines);
 
-            if (aPriority > bPriority) return 1;
-            
-            if (bPriority > aPriority) return -1;
+    const textLinesVariablesSorted = sortVariables(textLinesSorted);
 
-            if (aModule > bModule) return 1;
-            
-            if (aModule < bModule) return -1;
-
-            return 0;
-        });
-
-        editor.edit(function (editBuilder) {
-            editBuilder.replace(editor.selection, textLines.join('\n'));
-        });
+    editor.edit(function (editBuilder) {
+      editBuilder.replace(editor.selection, textLinesVariablesSorted.join('\n'));
     });
+  });
 
-    context.subscriptions.push(disposable);
+  context.subscriptions.push(disposable);
 }
 exports.activate = activate;
 
-function deactivate() {
-}
+function deactivate() {}
 exports.deactivate = deactivate;
